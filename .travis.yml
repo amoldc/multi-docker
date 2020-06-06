@@ -1,0 +1,22 @@
+sudo: required
+services:
+	- docker
+
+before_install:
+	- docker build -t amoldc/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true USERNAME/react-test npm test
+
+after_success:
+	- docker build -t amoldc/multi-client ./client
+	- docker build -t amoldc/multi-nginx ./nginx
+	- docker build -t amoldc/multi-server ./server
+	- docker build -t amoldc/multi-worker ./worker
+
+- echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+- docker push amoldc/multi-client
+- docker push amoldc/multi-nginx
+- docker push amoldc/multi-server
+- docker push amoldc/multi-worker
